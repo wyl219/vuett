@@ -10,6 +10,7 @@
        <div>
          <label for="input1"  class="label-fixed-width">{{ labelNames[0] }}:</label>
          <input ref="input1Ref" type="text" v-model="input1" @blur="handleNumericInput('input1')" @keyup.enter="handleEnterKey('input2')" />
+
        </div>
        <div>
          <label for="input2"  class="label-fixed-width">{{ labelNames[1] }}:</label>
@@ -95,7 +96,7 @@ export default {
         {"会议室": 350}
       ],
       // highlightedRow: null,
-      labelNames: ["面积", "冷指标", "数量", "预设类型", "单台冷量"],
+      labelNames: ["面积m²", "冷指标", "数量", "预设类型", "单台冷量"],
       labelToFieldMap: ["input1", "input2", "input3", "selectedOption", "result"],
       // div3_info:`这是一个计算器，可以计算空调的冷量。
       // 输入面积、冷指标、数量，即可计算单台空调的冷量。`
@@ -338,13 +339,13 @@ export default {
 
 .label-fixed-width {
   display: inline-block; /* 将 display 设置为 inline-block */
-  width: 70px; /* 设置固定宽度，根据需要进行调整 */
+  width: 100px; /* 设置固定宽度，根据需要进行调整 */
 }
 
 .short-select,
 input {
   //flex: 1;
-  width: calc(100% - 70px)
+  width: calc(100% - 100px)
 }
 
 .header{
