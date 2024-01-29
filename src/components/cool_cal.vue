@@ -42,14 +42,15 @@
      </div>
 
      <!-- div2 -->
-     <div class="div2" v-show="! reverseMode">
+<!--     <div class="div2" v-show="! reverseMode">-->
+     <div class="div2" >
        <div class="header">
          <span v-for="(label , index ) in labelNames" :key="label" @click="sortData(labelToFieldMap[index])">{{ label }}</span>
          <span @click="clearData" style="text-decoration: underline; cursor: pointer;">Clear</span>
        </div>
        <div class="data">
 <!--         <div class="data" @mouseover="highlightRow(index)" @mouseleave="highlightRow(null)">-->
-         <div v-for="(row, rowIndex) in data" :key="rowIndex" class="data-row" @click="loadData(rowIndex)">
+         <div v-for="(row, rowIndex) in currentData" :key="rowIndex" class="data-row" @click="loadData(rowIndex)">
            <span v-for="label in row" :key="label">{{ label }}</span>
            <span @click="deleteRow(rowIndex)" style="text-decoration: underline; cursor: pointer;">Delete</span>
          </div>
@@ -68,7 +69,7 @@
       <br>
       在右侧表格内点击一行数据，可以将数据载入输入框内，点击Delete可以删除数据。点击上面的clear可以清空表格。
       <br>
-      反推模式下，输入边长、冷指标、单台冷量，即可计算另一边长。在前两个输入框内回车会自动跳转到下一个输入框。在反推模式下，历史功能不可用。
+      反推模式下，输入边长、冷指标、单台冷量，即可计算另一边长。在前两个输入框内回车会自动跳转到下一个输入框。单台冷量输入框内回车会自动保存数据。
       <br>
       普通模式用于房间计算冷量,反推模式用于走道计算间距.
     </div>
@@ -86,6 +87,8 @@ export default {
       reverseMode:false,
       selectedOption: null,
       data: [],
+      data2: [], // 用于保存反推模式下的数据
+      // data3: [], // 用于在div2中显示的数据
       options: [
         {"办公室": 200},
         {"病房、旅馆": 230},
@@ -105,6 +108,8 @@ export default {
     if (savedData) {
       this.data = JSON.parse(savedData);
     }
+    // this.data3=this.data;
+    this.reverseMode=false;
   },
 
   updated() {
@@ -112,6 +117,9 @@ export default {
     localStorage.setItem(this.module_name, jsonData);
   },
   computed: {
+    currentData() {
+      return this.reverseMode ? this.data2 : this.data;
+    },
     result() {
 
       if (this.reverseMode) {
@@ -166,10 +174,12 @@ export default {
         this.labelNames[0] = "边长";
         this.labelNames[2] = "单台冷量";
         this.labelNames[4] = "另一边长";
+        // this.data3=this.data2;
       } else {
         this.labelNames[0] = "面积";
         this.labelNames[2] = "数量";
         this.labelNames[4] = "单台冷量";
+        // this.data3=this.data;
       }
     },
 
@@ -203,24 +213,48 @@ export default {
       }
     },
     saveData() {
-      if(this.reverseMode){
-
-        return;
-      }
-
-      // 获取选中选项的文本
-      // console.log(this.selectedOption)
+      // if(this.reverseMode){
+      //
+      //   return;
+      // }
+      //
+      // // 获取选中选项的文本
+      // // console.log(this.selectedOption)
+      // const selectedOptionText = Object.keys(this.options.find(option => Object.values(option)[0] === this.selectedOption))[0];
+      // // console.log(selectedOptionText)
+      // this.data.push({
+      //   input1: this.input1,
+      //   input2: this.input2,
+      //   input3: this.input3,
+      //   selectedOption: selectedOptionText,
+      //   result: this.result
+      // });
+      // this.clearInputs();
       const selectedOptionText = Object.keys(this.options.find(option => Object.values(option)[0] === this.selectedOption))[0];
-      // console.log(selectedOptionText)
-      this.data.push({
-        input1: this.input1,
-        input2: this.input2,
-        input3: this.input3,
-        selectedOption: selectedOptionText,
-        result: this.result
-      });
+      if (this.reverseMode) {
+        // console.log('反推')
+        // 如果是反推模式，保存到 data2
+        this.data2.push({
+          input1: this.input1,
+          input2: this.input2,
+          input3: this.input3,
+          selectedOption: selectedOptionText,
+          result: this.result,
+        });
+      } else {
+        // console.log('正常')
+        // 否则保存到 data
+        this.data.push({
+          input1: this.input1,
+          input2: this.input2,
+          input3: this.input3,
+          selectedOption: selectedOptionText,
+          result: this.result,
+        });
+      }
       this.clearInputs();
     },
+
     // highlightRow(index) {
     //   this.highlightedRow = index;
     // },
