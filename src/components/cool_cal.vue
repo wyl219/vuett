@@ -29,15 +29,26 @@
          <label for="result"  class="label-fixed-width">{{ labelNames[4] }}:</label>
          <input ref="resultRef" type="text" v-model="result" readonly />
        </div>
+       <!-- 新增复选框 -->
+       <div class="external-left-align">
+         <label for="reverseMode">
+           <input class="narrow-input" type="checkbox" id="reverseMode" v-model="reverseMode" @change="handleReverseModeChange">
+           反推模式
+         </label>
+       </div>
+
+
+
      </div>
 
      <!-- div2 -->
-     <div class="div2">
+     <div class="div2" v-show="! reverseMode">
        <div class="header">
-         <span v-for="label in labelNames" :key="label" @click="sortData(`input${label.charAt(label.length - 1)}`)">{{ label }}</span>
+         <span v-for="(label , index ) in labelNames" :key="label" @click="sortData(labelToFieldMap[index])">{{ label }}</span>
          <span @click="clearData" style="text-decoration: underline; cursor: pointer;">Clear</span>
        </div>
-       <div class="data" @mouseover="highlightRow(index)" @mouseleave="highlightRow(null)">
+       <div class="data">
+<!--         <div class="data" @mouseover="highlightRow(index)" @mouseleave="highlightRow(null)">-->
          <div v-for="(row, rowIndex) in data" :key="rowIndex" class="data-row" @click="loadData(rowIndex)">
            <span v-for="label in row" :key="label">{{ label }}</span>
            <span @click="deleteRow(rowIndex)" style="text-decoration: underline; cursor: pointer;">Delete</span>
@@ -50,7 +61,16 @@
 
     <!-- div3 -->
     <div class="div3">
-      <p>{{div3_info}}</p>
+<!--      {{div3_info}}-->
+      这是一个计算器，可以计算空调的冷量。
+      <br>
+      普通模式下,输入面积、冷指标、数量，即可计算单台空调的冷量。在前两个输入框内回车会自动跳转到下一个输入框,在数量输入框内回车会自动保存数据。
+      <br>
+      在右侧表格内点击一行数据，可以将数据载入输入框内，点击Delete可以删除数据。点击上面的clear可以清空表格。
+      <br>
+      反推模式下，输入边长、冷指标、单台冷量，即可计算另一边长。在前两个输入框内回车会自动跳转到下一个输入框。在反推模式下，历史功能不可用。
+      <br>
+      普通模式用于房间计算冷量,反推模式用于走道计算间距.
     </div>
   </div>
 </template>
@@ -63,6 +83,7 @@ export default {
       input1: "",
       input2: "",
       input3: "",
+      reverseMode:false,
       selectedOption: null,
       data: [],
       options: [
@@ -70,9 +91,11 @@ export default {
         {"病房、旅馆": 230},
         {"会议室": 350}
       ],
-      highlightedRow: null,
+      // highlightedRow: null,
       labelNames: ["面积", "冷指标", "数量", "预设类型", "单台冷量"],
-      div3_info:"这是一个计算器，可以计算空调的冷量。\n输入面积、冷指标、数量，即可计算单台空调的冷量。"
+      labelToFieldMap: ["input1", "input2", "input3", "selectedOption", "result"],
+      // div3_info:`这是一个计算器，可以计算空调的冷量。
+      // 输入面积、冷指标、数量，即可计算单台空调的冷量。`
     };
   },
   created() {
@@ -90,15 +113,66 @@ export default {
   },
   computed: {
     result() {
-      const num1 = parseFloat(this.input1) || 0;
-      const num2 = parseFloat(this.input2) || 0;
-      const num3 = parseFloat(this.input3) || 1;
 
-      // 将 input1、input2、input3 相加，并保留两位小数
-      return (num1 * num2 / num3).toFixed(2);
+      if (this.reverseMode) {
+        const num1 = parseFloat(this.input1) || 1;
+        const num2 = parseFloat(this.input2) || 1;
+        const num3 = parseFloat(this.input3) || 0;
+
+        // 修改为 input3*1000/input2/input1
+        return (num3  / num2 / num1).toFixed(2);
+      } else {
+        const num1 = parseFloat(this.input1) || 0;
+        const num2 = parseFloat(this.input2) || 0;
+        const num3 = parseFloat(this.input3) || 1;
+        // 保留原来的计算公式
+        return (num1 * num2 / num3).toFixed(2);
+      }
+
     }
   },
   methods: {
+
+    sortData(field) {
+
+      // console.log(field)
+      // 判断是否要升序还是降序
+      const ascending = this.sortField === field ? !this.sortAscending : true;
+
+
+      // 更新排序字段和排序顺序
+      this.sortField = field;
+      this.sortAscending = ascending;
+
+      // 对数据进行排序
+      this.data.sort((a, b) => {
+        // 根据排序字段进行比较
+
+
+
+        const valueA = a[field];
+        const valueB = b[field];
+
+        if (ascending) {
+          return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+        } else {
+          return valueB > valueA ? 1 : valueB < valueA ? -1 : 0;
+        }
+      });
+    },
+    handleReverseModeChange() {
+      // 如果选择了反推模式，修改标签名称
+      if (this.reverseMode) {
+        this.labelNames[0] = "边长";
+        this.labelNames[2] = "单台冷量";
+        this.labelNames[4] = "另一边长";
+      } else {
+        this.labelNames[0] = "面积";
+        this.labelNames[2] = "数量";
+        this.labelNames[4] = "单台冷量";
+      }
+    },
+
     change_sel() {
       this.input2 = this.selectedOption;
     },
@@ -129,6 +203,11 @@ export default {
       }
     },
     saveData() {
+      if(this.reverseMode){
+
+        return;
+      }
+
       // 获取选中选项的文本
       // console.log(this.selectedOption)
       const selectedOptionText = Object.keys(this.options.find(option => Object.values(option)[0] === this.selectedOption))[0];
@@ -142,10 +221,14 @@ export default {
       });
       this.clearInputs();
     },
-    highlightRow(index) {
-      this.highlightedRow = index;
-    },
+    // highlightRow(index) {
+    //   this.highlightedRow = index;
+    // },
     loadData(index) {
+      if(this.reverseMode){
+
+        return;
+      }
       const selectedData = this.data[index];
       this.input1 = selectedData.input1;
       this.input2 = selectedData.input2;
@@ -174,6 +257,14 @@ export default {
 
 
 <style scoped>
+.external-left-align label {
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+.narrow-input {
+  width: 20px; /* 或者设置为合适的宽度 */
+}
 .wide_div{
   width: 800px;
   display: flex;
@@ -205,6 +296,7 @@ export default {
 }
 
 .div3 {
+  white-space: normal;
   width: 800px;
   height: 300px;
   //background-color: rgba(0, 0, 0, 0);
