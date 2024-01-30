@@ -89,9 +89,9 @@ export default {
       data2: [], // 用于保存反推模式下的数据
       // data3: [], // 用于在div2中显示的数据
       options: [
-        {"办公室": 200},
-        {"病房、旅馆": 230},
-        {"会议室": 350}
+        {"风量大于5万 76%": 76},
+        {"风量大于3万 71%": 71},
+        {"风量小于2万 67%": 67}
       ],
       // highlightedRow: null,
       labelNames1: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"轴功率":"KW"}],
@@ -104,6 +104,8 @@ export default {
   created() {
     // 在 created 钩子中设置 selectedOption 的初始值为 options 数组的第一个选项
     this.selectedOption = Object.values(this.options[0])[0];
+    this.input3=this.selectedOption
+    // this.selectedOption = null;
     const savedData = localStorage.getItem(this.module_name);
     if (savedData) {
       this.data = JSON.parse(savedData);
@@ -126,7 +128,7 @@ export default {
     result() {
       const num1 = parseFloat(this.input1) || 0;
       const num2 = parseFloat(this.input2) || 0;
-      const num3 = parseFloat(this.input3) || 1;
+      const num3 = 0.01* parseFloat(this.input3) || 1;
       const shaft_power=(num1 * num2 / num3 /3600/1000)
 
       if (this.reverseMode) {
@@ -211,7 +213,7 @@ export default {
     // },
 
     change_sel() {
-      this.input2 = this.selectedOption;
+      this.input3 = this.selectedOption;
     },
     handleNumericInput(inputField) {
 
