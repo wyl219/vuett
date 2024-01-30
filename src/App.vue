@@ -3,13 +3,15 @@
 <!-- src/App.vue -->
 <template>
   <div id="app">
-  <cool_cal id ='cool_cal'> </cool_cal>
+<!--  <cool_cal id ='cool_cal'> </cool_cal>-->
+    <fan_power_cal id="fan_power_cal"></fan_power_cal>
   </div>
 </template>
 
 <script>
 
 import cool_cal from './components/cool_cal.vue';
+import fan_power_cal from "@/components/fan_power_cal.vue";
 export default {
   data(){
     return{
@@ -17,7 +19,8 @@ export default {
     }
   },
   components: {
-    cool_cal
+    cool_cal,
+    fan_power_cal
   },
   methods:{
     chg(n){

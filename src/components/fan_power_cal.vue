@@ -3,76 +3,74 @@
 <template>
   <div class="calculator" >
     <!-- div1 -->
-   <div class='wide_div'>
+    <div class='wide_div'>
 
-     <div class="div1">
+      <div class="div1">
 
-       <div>
-         <label for="input1"  class="label-fixed-width">{{ formatObject(labelNames[0]) }}:</label>
-         <input ref="input1Ref" type="text" v-model="input1" @blur="handleNumericInput('input1')" @keyup.enter="handleEnterKey('input2')" />
+        <div>
+          <label for="input1"  class="label-fixed-width">{{ formatObject(labelNames[0]) }}:</label>
+          <input ref="input1Ref" type="text" v-model="input1" @blur="handleNumericInput('input1')" @keyup.enter="handleEnterKey('input2')" />
 
-       </div>
-       <div>
-         <label for="input2"  class="label-fixed-width">{{ formatObject(labelNames[1]) }}:</label>
-         <input ref="input2Ref" type="text" v-model="input2" @blur="handleNumericInput('input2')" @keyup.enter="handleEnterKey('input3')" />
-       </div>
-       <div>
-         <label for="input3"  class="label-fixed-width">{{ formatObject(labelNames[2])}}:</label>
-         <input ref="input3Ref" type="text" v-model="input3" @blur="handleNumericInput('input3')" @keyup.enter="handleEnterKey('save')" />
-       </div>
-       <div>
-         <label for="select"  class="label-fixed-width">{{ formatObject(labelNames[3]) }}:</label>
-         <select ref="selectRef" v-model="selectedOption"  class="short-select" @change="change_sel">
-           <option v-for="(option,index) in options" :key="index" :value="Object.values(option)[0]">{{ Object.keys(option)[0] }}</option>
-         </select>
-       </div>
-       <div>
-         <label for="result"  class="label-fixed-width">{{ formatObject(labelNames[4])}}:</label>
-         <input ref="resultRef" type="text" v-model="result" readonly />
-       </div>
-       <!-- 新增复选框 -->
-       <div class="external-left-align">
-         <label for="reverseMode">
-           <input class="narrow-input" type="checkbox" id="reverseMode" v-model="reverseMode">
-           反推模式
-         </label>
-       </div>
+        </div>
+        <div>
+          <label for="input2"  class="label-fixed-width">{{ formatObject(labelNames[1]) }}:</label>
+          <input ref="input2Ref" type="text" v-model="input2" @blur="handleNumericInput('input2')" @keyup.enter="handleEnterKey('input3')" />
+        </div>
+        <div>
+          <label for="input3"  class="label-fixed-width">{{ formatObject(labelNames[2])}}:</label>
+          <input ref="input3Ref" type="text" v-model="input3" @blur="handleNumericInput('input3')" @keyup.enter="handleEnterKey('save')" />
+        </div>
+        <div>
+          <label for="select"  class="label-fixed-width">{{ formatObject(labelNames[3]) }}:</label>
+          <select ref="selectRef" v-model="selectedOption"  class="short-select" @change="change_sel">
+            <option v-for="(option,index) in options" :key="index" :value="Object.values(option)[0]">{{ Object.keys(option)[0] }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="result"  class="label-fixed-width">{{ formatObject(labelNames[4])}}:</label>
+          <input ref="resultRef" type="text" v-model="result" readonly />
+        </div>
+        <!-- 新增复选框 -->
+        <div class="external-left-align">
+          <label for="reverseMode">
+            <input class="narrow-input" type="checkbox" id="reverseMode" v-model="reverseMode" >
+            求电机功率
+          </label>
+        </div>
 
 
 
-     </div>
+      </div>
 
-     <!-- div2 -->
-<!--     <div class="div2" v-show="! reverseMode">-->
-     <div class="div2" >
-       <div class="header">
-         <span v-for="(label , index ) in labelNames" :key="label" @click="sortData(labelToFieldMap[index])">{{  Object.keys(label)[0] }}</span>
-         <span @click="clearData" style="text-decoration: underline; cursor: pointer;">Clear</span>
-       </div>
-       <div class="data">
-<!--         <div class="data" @mouseover="highlightRow(index)" @mouseleave="highlightRow(null)">-->
-         <div v-for="(row, rowIndex) in currentData" :key="rowIndex" class="data-row" @click="loadData(rowIndex)">
-           <span v-for="label in row" :key="label">{{ label }}</span>
-           <span @click="deleteRow(rowIndex)" style="text-decoration: underline; cursor: pointer;">Delete</span>
-         </div>
-       </div>
+      <!-- div2 -->
+      <!--     <div class="div2" v-show="! reverseMode">-->
+      <div class="div2" >
+        <div class="header">
+          <span v-for="(label , index ) in labelNames" :key="label" @click="sortData(labelToFieldMap[index])">{{  Object.keys(label)[0] }}</span>
+          <span @click="clearData" style="text-decoration: underline; cursor: pointer;">Clear</span>
+        </div>
+        <div class="data">
+          <!--         <div class="data" @mouseover="highlightRow(index)" @mouseleave="highlightRow(null)">-->
+          <div v-for="(row, rowIndex) in currentData" :key="rowIndex" class="data-row" @click="loadData(rowIndex)">
+            <span v-for="label in row" :key="label">{{ label }}</span>
+            <span @click="deleteRow(rowIndex)" style="text-decoration: underline; cursor: pointer;">Delete</span>
+          </div>
+        </div>
 
-     </div>
+      </div>
 
-   </div>
+    </div>
 
     <!-- div3 -->
     <div class="div3">
-<!--      {{div3_info}}-->
-      这是一个计算器，可以计算空调的冷量。
+      <!--      {{div3_info}}-->
+      这是一个计算器，可以计算风机的轴功率或电机功率。
       <br>
-      普通模式下,输入面积、冷指标、数量，即可计算单台空调的冷量。在前两个输入框内回车会自动跳转到下一个输入框,在数量输入框内回车会自动保存数据。
+      普通模式下,输入计算参数，即可计算轴功率。在前两个输入框内回车会自动跳转到下一个输入框,在数量输入框内回车会自动保存数据。
       <br>
       在右侧表格内点击一行数据，可以将数据载入输入框内，点击Delete可以删除数据。点击上面的clear可以清空表格。
       <br>
-      反推模式下，输入边长、冷指标、单台冷量，即可计算另一边长。在前两个输入框内回车会自动跳转到下一个输入框。单台冷量输入框内回车会自动保存数据。
-      <br>
-      普通模式用于房间计算冷量,反推模式用于走道计算间距.
+
     </div>
   </div>
 </template>
@@ -81,7 +79,7 @@
 export default {
   data() {
     return {
-      module_name:"cool_cal",
+      module_name:"fan_power_cal",
       input1: "",
       input2: "",
       input3: "",
@@ -96,8 +94,8 @@ export default {
         {"会议室": 350}
       ],
       // highlightedRow: null,
-      labelNames1: [{"面积":"m²"}, {"冷指标":"W/m²"}, {"数量":"台"}, {"预设类型":""}, {"单台冷量":"KW"}],
-      labelNames2: [{"边长":"m"}, {"冷指标":"W/m²"}, {"单台冷量":"w"}, {"预设类型":""}, {"另一边长":"m"}],
+      labelNames1: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"轴功率":"KW"}],
+      labelNames2: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"电机功率":"KW"}],
       labelToFieldMap: ["input1", "input2", "input3", "selectedOption", "result"],
       // div3_info:`这是一个计算器，可以计算空调的冷量。
       // 输入面积、冷指标、数量，即可计算单台空调的冷量。`
@@ -126,25 +124,44 @@ export default {
       return this.reverseMode ? this.data2 : this.data;
     },
     result() {
+      const num1 = parseFloat(this.input1) || 0;
+      const num2 = parseFloat(this.input2) || 0;
+      const num3 = parseFloat(this.input3) || 1;
+      const shaft_power=(num1 * num2 / num3 /3600/1000)
 
       if (this.reverseMode) {
-        const num1 = parseFloat(this.input1) || 1;
-        const num2 = parseFloat(this.input2) || 1;
-        const num3 = parseFloat(this.input3) || 0;
+        // 求电机功率
 
-        // 修改为 input3*1000/input2/input1
-        return (num3  / num2 / num1).toFixed(2);
+        return this.get_power(shaft_power).toFixed(2);
       } else {
-        const num1 = parseFloat(this.input1) || 0;
-        const num2 = parseFloat(this.input2) || 0;
-        const num3 = parseFloat(this.input3) || 1;
-        // 保留原来的计算公式
-        return (num1 * num2 / num3).toFixed(2);
+        return shaft_power.toFixed(2);
       }
 
     }
   },
   methods: {
+    get_power(power) {
+      const powerArray =[0.75, 1.1, 1.5, 2.2, 3.7, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75,
+        90, 110, 132, 150, 160, 185, 200, 220, 250];
+
+      if(power < 0.55){
+        power=power*1.4
+      }else if(power < 2.2){
+        power=power*1.3
+      }else if(power < 7.5){
+        power=power*1.2
+      }else {
+        power=power*1.15
+      }
+
+      for (let i = 0; i < powerArray.length; i++) {
+        if (powerArray[i] >= power) {
+          return powerArray[i];
+        }
+      }
+
+      return powerArray[powerArray.length - 1];
+    },
     formatObject(obj) {
       const key = Object.keys(obj)[0];
       const value = obj[key];
