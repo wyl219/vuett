@@ -31,11 +31,25 @@
           <input ref="resultRef" type="text" v-model="result" readonly />
         </div>
         <!-- 新增复选框 -->
+
+
+
+
         <div class="external-left-align">
-          <label for="reverseMode">
-            <input class="narrow-input" type="checkbox" id="reverseMode" v-model="reverseMode" >
-            求电机功率
+          风机功率
+          <label class="toggle-container" for="reverseMode">
+
+            <input class="narrow-input" type="checkbox"  id="reverseMode"  v-model="reverseMode" @change="change_re">
+
+            <div class="toggle-switch"></div>
           </label>
+          水泵功率
+
+
+<!--          <label for="reverseMode">-->
+<!--            <input class="narrow-input" type="checkbox" id="reverseMode" v-model="reverseMode" @change="change_re">-->
+<!--            水泵功率-->
+<!--          </label>-->
         </div>
 
 
@@ -64,9 +78,9 @@
     <!-- div3 -->
     <div class="div3">
       <!--      {{div3_info}}-->
-      这是一个计算器，可以计算风机的轴功率或电机功率。
+      这是一个计算器，可以计算风机或水泵的轴功率和电机功率。
       <br>
-      普通模式下,输入计算参数，即可计算轴功率。在前两个输入框内回车会自动跳转到下一个输入框,在数量输入框内回车会自动保存数据。
+      输入计算参数，即可计算功率,显示为轴功率/电机功率。在前两个输入框内回车会自动跳转到下一个输入框,在数量输入框内回车会自动保存数据。
       <br>
       在右侧表格内点击一行数据，可以将数据载入输入框内，点击Delete可以删除数据。点击上面的clear可以清空表格。
       <br>
@@ -88,23 +102,26 @@ export default {
       data: [],
       data2: [], // 用于保存反推模式下的数据
       // data3: [], // 用于在div2中显示的数据
-      options: [
+      options1: [
         {"风量大于5万 76%": 76},
         {"风量大于3万 71%": 71},
         {"风量小于2万 67%": 67}
       ],
+      options2: [
+        {"流量大于10 80%": 80},
+        {"流量大于30 71%": 71},
+        {"流量大于20 67%": 67}
+      ],
       // highlightedRow: null,
-      labelNames1: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"轴功率":"KW"}],
-      labelNames2: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"电机功率":"KW"}],
+      labelNames1: [{"风量":"m³/h"}, {"风压":"Pa"}, {"效率":"%"}, {"预设类型":""}, {"功率":"KW"}],
+      labelNames2: [{"流量":"m³/h"}, {"扬程":"m"}, {"效率":"%"}, {"预设类型":""}, {"功率":"KW"}],
       labelToFieldMap: ["input1", "input2", "input3", "selectedOption", "result"],
-      // div3_info:`这是一个计算器，可以计算空调的冷量。
-      // 输入面积、冷指标、数量，即可计算单台空调的冷量。`
+
     };
   },
   created() {
     // 在 created 钩子中设置 selectedOption 的初始值为 options 数组的第一个选项
-    this.selectedOption = Object.values(this.options[0])[0];
-    this.input3=this.selectedOption
+    this.change_re()
     // this.selectedOption = null;
     const savedData = localStorage.getItem(this.module_name);
     if (savedData) {
@@ -125,24 +142,40 @@ export default {
     currentData() {
       return this.reverseMode ? this.data2 : this.data;
     },
+    options(){
+      return this.reverseMode ? this.options2 : this.options1;
+    },
     result() {
       const num1 = parseFloat(this.input1) || 0;
       const num2 = parseFloat(this.input2) || 0;
       const num3 = 0.01* parseFloat(this.input3) || 1;
-      const shaft_power=(num1 * num2 / num3 /3600/1000)
+
 
       if (this.reverseMode) {
-        // 求电机功率
+        // 水泵
 
-        return this.get_power(shaft_power).toFixed(2);
+        const shaft_power=(9.8 * num1 * num2 / num3 /3600 )
+        const mac_power=this.get_power(shaft_power).toFixed(2)
+        return `${ shaft_power.toFixed(2)} / ${mac_power}`;
       } else {
-        return shaft_power.toFixed(2);
+        const shaft_power=(num1 * num2 / num3 /3600/1000)
+        const mac_power=this.get_power(shaft_power).toFixed(2)
+        return `${ shaft_power.toFixed(2)} / ${mac_power}`;
       }
 
     }
   },
   methods: {
+    change_re(){
+      this.selectedOption = Object.values(this.options[0])[0];
+      this.input3=this.selectedOption
+    },
     get_power(power) {
+
+      if(power===0){
+        return 0;
+      }
+
       const powerArray =[0.75, 1.1, 1.5, 2.2, 3.7, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75,
         90, 110, 132, 150, 160, 185, 200, 220, 250];
 
@@ -320,13 +353,47 @@ export default {
 
 
 <style scoped>
-.external-left-align label {
+/* 复选框容器样式 */
+.toggle-container {
+  display: inline-block;
+  background-color: #ddd;
+  border-radius: 10px; /* 调整胶囊的圆角 */
+  padding: 2px; /* 调整内边距 */
+  cursor: pointer;
+  width: 40px; /* 调整容器宽度 */
+  height: 15px; /* 调整容器高度 */
+  overflow: hidden; /* 隐藏超出容器的内容 */
+}
+
+/* 复选框样式 - 隐藏原生复选框 */
+.toggle-container input {
+  display: none;
+}
+
+/* 开关的样式 */
+.toggle-switch {
+  width: 15px; /* 调整开关宽度 */
+  height: 10px; /* 调整开关高度 */
+  background-color: #fff;
+  border-radius: 50%;
+  transition: margin 0.3s ease;
+  margin-left: 2px; /* 调整左侧选项和开关之间的间距 */
+}
+
+/* 复选框选中状态下的样式 */
+.toggle-container input:checked + .toggle-switch {
+  margin-left: 20px; /* 调整选中状态下的间距 */
+}
+
+
+
+.external-left-align  {
   text-align: left;
   display: flex;
   align-items: center;
 }
 .narrow-input {
-  width: 20px; /* 或者设置为合适的宽度 */
+  width: 10px; /* 或者设置为合适的宽度 */
 }
 .wide_div{
   width: 800px;
